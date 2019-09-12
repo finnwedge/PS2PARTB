@@ -5,7 +5,7 @@
 
  
  %% Importing image for card detection
- im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Simple19.png');
+ im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Simple21.png');
  figure(1);
  imshow(im1);
  
@@ -14,13 +14,9 @@
  [counts, locations] = imhist(im2); %creates a histogram of the image
  % counts - number of pixels in location
  % location range - 0-256
- % threshold = 155/256;
- % threshold = threshold(counts); %creates a threshold based on the histogram peaks
+ %creates a threshold based on the histogram peaks
  threshold_bin = double(min((multithresh(im2, 5))));
  threshold = threshold_bin/255;
- %threshold = double(threshold_bin(2)) / 255;
- %threshold = (t/256);
- %im2 = histeq(im2);
  figure; imshow(im2); 
  
  %% Edge detection
@@ -36,12 +32,14 @@
  figure; imshow(im)
  
  %% Border Overlay
- [B,L,n,A] = bwboundaries(im);
+ [B,L,n,A] = bwboundaries(im); 
+ %finds the boundaries of connected objects inside image
  hold on
  for k = 1:n
     boundary = B{k};
     plot(boundary(:,2), boundary(:,1), 'r','LineWidth',1);
  end
+ %plots the boundaries over the binary image
  
  figure; imshow(im1);
  hold on
@@ -49,6 +47,7 @@
     boundary = B{k};
     plot(boundary(:,2), boundary(:,1), 'r','LineWidth',1);
   end
+ %plots the boundaries over the original image
  
  %% Isolation of cards
  %  All cards are of size 56 x 87mm. Thus the aspect ratio is
@@ -57,17 +56,32 @@
  %cards = bwpropfilt(im1, 
  stats = regionprops(im,'MajorAxisLength','MinorAxisLength','PixelList','Image');
  pixel_list={};
- image_pixels = L(1)*L(2);
- cards = bwareaopen(im,image_pixels);
- figure; imshow(cards)
+ image_size = size(L);
+ card = zeros(image_size,'uint8');
  for k = 1:n
      major = stats(k).MajorAxisLength;
      minor = stats(k).MinorAxisLength;
      aspect_ratio = major/minor;
      if aspect_ratio >= aspect_ratio_range(1) && aspect_ratio <= aspect_ratio_range(2)
          pixel_list(k,:) = {stats(k).PixelList(k,1),stats(k).PixelList(k,2)};
-         cards = imoverlay(cards,bwselect(im,pixel_list{k,1},pixel_list{k,2}));
-         figure; imshow(cards);
+         card = imoverlay(card,bwselect(im,pixel_list{k,1},pixel_list{k,2}),'w');
      end
-     
  end
+ card = card(:,:,1);
+ figure; imshow(card);
+ 
+%% Border Overlay With Cards
+ [B,L,n,A] = bwboundaries(card);
+ hold on
+ for k = 1:n
+    boundary = B{k};
+    plot(boundary(:,2), boundary(:,1), 'r','LineWidth',2);
+ end
+ 
+ figure; imshow(im1);
+ hold on
+  for k = 1:n
+    boundary = B{k};
+    plot(boundary(:,2), boundary(:,1), 'r','LineWidth',2);
+  end
+ 
