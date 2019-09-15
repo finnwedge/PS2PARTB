@@ -6,7 +6,7 @@
 
  
  %% Importing image for card detection
- im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Simple22.png');
+ im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Advanced2.png');
  figure(1);
  imshow(im1);
  
@@ -146,7 +146,7 @@
       cell
       line([min_distances{cell,1}, min_distances{cell,3}], [min_distances{cell,2}, min_distances{cell,4}], 'Color', 'y', 'LineWidth', 3);
       i = i+1;
-      if i == num_min_distances
+      if i == n + 1
           x = x + 10;
           i = i-1;
       end
