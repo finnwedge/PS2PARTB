@@ -1,11 +1,12 @@
  %% Set up workspace
  clc
+ clear vars
  clear all
  close all
 
  
  %% Importing image for card detection
- im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Simple21.png');
+ im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Simple22.png');
  figure(1);
  imshow(im1);
  
@@ -23,7 +24,7 @@
  im = edge(im2, 'canny', threshold); %detects the edges of the image using the canny method and the threshold calculated above
  figure; imshow(im);
  
- se = strel('disk', 10,0); %creates a structual element
+ se = strel('disk', 5,0); %creates a structual element
  im = imdilate(im,se);
  figure; imshow(im)
  im = imerode(im,se);
@@ -69,6 +70,7 @@
  end
  card = card(:,:,1);
  figure; imshow(card);
+ stats2 = regionprops(im,'Orientation');
  
 %% Border Overlay With Cards
  [B,L,n,A] = bwboundaries(card);
@@ -85,3 +87,68 @@
     plot(boundary(:,2), boundary(:,1), 'r','LineWidth',2);
   end
  
+  %% Finding the minimum distance between each card
+  min_distances = {};
+  for k = 1:(n) 
+      % Chooses the card boundary to be checked against
+      boundary_1 = B{k};
+      boundary_1x = boundary_1(:,2);
+      boundary_1y = boundary_1(:,1);
+      b_x1 = 1;
+      b_y1 = 1;
+      b_x2 = 1;
+      b_y2 = 1;
+      for i = k+1:n 
+          % Chooses the second card boundary to be compared with
+          if i == k 
+              % If comparing with own boundary, skip to next boundary
+              continue 
+          end
+          boundary_2 = B{i};
+          current_min_distance = inf;
+          for ii = 1 : size(boundary_2,1)
+              % Chooses a pixel location on the border of boundary 2
+              boundary_2x = boundary_2(ii,2);
+              boundary_2y = boundary_2(ii,1);
+              boundary_distances = sqrt((boundary_2x - boundary_1x).^2 + (boundary_2y - boundary_1y).^2);
+              % Calculates the distance between the point specified on
+              % boundary 2, and every point on boundary 1
+              [minDistance(ii), index] = min(boundary_distances);
+              if minDistance(ii) < current_min_distance
+                  current_min_distance = minDistance(ii);
+                  b_x2 = boundary_2x;
+                  b_y2 = boundary_2y;
+                  b_x1 = boundary_1x(index);
+                  b_y1 = boundary_1y(index);
+                  location = k*10+i;
+                  min_distances(location,:) = {b_x1,b_y1,b_x2,b_y2,minDistance(ii),k,i,ii};
+                  %min_distances(location,:) = {minDistance(ii)};
+                  % Stores the minimum distance between each card in an
+                  % array, in the location of boundary 1 boundary 2. For
+                  % example, the distance between boundary 2 and boundary 6
+                  % would be found at 26. This assumes that no more than 9
+                  % cards will be in an image.
+              end
+          end
+      end
+  end
+  num_min_distances = (n^2-n)/2;
+  
+%   min_distances_sorted = min_distances(~cellfun('isempty',min_distances))
+%   i = 2;
+%   for 
+%       
+  i = 2;
+  x = 10;
+  for k = 1:num_min_distances
+      hold on
+      cell = x+i;
+      cell
+      line([min_distances{cell,1}, min_distances{cell,3}], [min_distances{cell,2}, min_distances{cell,4}], 'Color', 'y', 'LineWidth', 3);
+      i = i+1;
+      if i == num_min_distances
+          x = x + 10;
+          i = i-1;
+      end
+  end 
+                  
