@@ -6,7 +6,20 @@
 
  
  %% Importing image for card detection
- im1=imread('C:\Users\Finn\Dropbox\THIRD YEAR\METR4202\Sandbox\images\Advanced2.png');
+ addpath(genpath("PS2 Images")) %adds folder containing basic images to current path
+ num_images = 25;
+ image_names{num_images} = {};
+ for n = 1:num_images
+     image_names{n} = ['Simple',num2str(n),'.png'];
+ end
+ image_number = input('What basic image (1-25) would you like to test?  ');
+ if isempty(image_number)
+     return
+ end
+ im1 = imread(image_names{image_number});
+ 
+ 
+ 
  figure(1);
  imshow(im1);
  
@@ -70,7 +83,9 @@
  end
  card = card(:,:,1);
  figure; imshow(card);
- stats2 = regionprops(im,'Orientation');
+ stats2 = regionprops(card,'Orientation','Centroid');
+ centroids = cat(1,stats2.Centroid);
+ 
  
 %% Border Overlay With Cards
  [B,L,n,A] = bwboundaries(card);
@@ -85,6 +100,8 @@
   for k = 1:n
     boundary = B{k};
     plot(boundary(:,2), boundary(:,1), 'r','LineWidth',2);
+    h = text(centroids(k,1)-15,centroids(k,2)-10, num2str(k));
+    set(h,'Color', 'r','FontSize',24,'FontWeight','bold','BackgroundColor','black');
   end
  
   %% Finding the minimum distance between each card
@@ -143,8 +160,8 @@
   for k = 1:num_min_distances
       hold on
       cell = x+i;
-      cell
       line([min_distances{cell,1}, min_distances{cell,3}], [min_distances{cell,2}, min_distances{cell,4}], 'Color', 'y', 'LineWidth', 3);
+      fprintf('The minimum distance between card %d and card %d is %.2f pixels.\n',cell,cell,cell);
       i = i+1;
       if i == n + 1
           x = x + 10;
